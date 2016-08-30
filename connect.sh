@@ -10,7 +10,7 @@ if [ "$(id -u)" = "0" ]; then
 else
 
 ##takes the project list and put it in projects.txt
-gcloud projects list | tail -n +2 | awk '{ print $1 }' > projects.txt
+gcloud projects list | tail -n +2 | awk '{ print $2 }' > projects.txt
 ##function to design the instances and projects txts to look like [Num]instance or [Num]project
 design() {
 	awk '{print NR,$'$3'}' $1 > /tmp/sed.tmp
@@ -36,18 +36,18 @@ projects=(`cat "$file_projects"`)
 for line in "${projects[@]}"; do
   echo "$line"
 done
-printf "\n\e[1m\e[32mPlease select project number\033[0m: "
+printf "\e[1m\e[32mPlease select project number\033[0m: "
 read n
 PROJECT=$( echo ${projects[$n]} | cut -d"]" -f2)
 
 ##checks if the input is an integer and if its matching any project number
 if ! [[ $n = *[[:digit:]]* ]] ;
-	then exec >&2; printf "\e[1m\e[31merror: Not a number...\033[0m"; run_projects_section;
+	then exec >&2; printf "\e[1m\e[31merror: Not a number...\033[0m\n"; run_projects_section;
 		elif [[ ($n = 0) ]]; then
 		printf "\e[1m\e[31mGood bye, exiting...\033[0m\n"; rm -rf projects.*; exit
 		elif [ "$n" -ge "${#projects[@]}" ]
 		then
-                printf "\e[1m\e[31mYou selected non-existing project number...\033[0m";run_projects_section;
+                printf "\e[1m\e[31mYou selected non-existing project number...\033[0m\n"; rm -rf instances.*; run_projects_section;
 fi
 printf "\e[1m\e[32mProject selected: $PROJECT\033[0m\n"
 
@@ -74,15 +74,15 @@ if [ -s instances.lst ]
 		INSTANCE=$( echo ${instances[$n2]} | cut -d"]" -f2)
 		instance_lines=${#instances[@]}
 		if ! [[ $n2 = *[[:digit:]]* ]] ;
-        	then exec >&2; printf "\e[1m\e[31merror: Not a number...\033[0m"; run_instances_section;
+        	then exec >&2; printf "\e[1m\e[31merror: Not a number...\033[0m\n"; run_instances_section;
                 	elif [[ ($n2 = 0) ]]; then
                         printf "\e[1m\e[31mGood bye, exiting...\033[0m\n"; rm -rf instances.*; rm -rf projects.*; exit
 			elif [ "$n2" -gt "${#instances[@]}" ]
                 then
-                printf "\e[1m\e[31mYou selected non-existing project number...\033[0m"; run_instances_section;
+                printf "\e[1m\e[31mYou selected non-existing project number...\033[0m\n"; rm -rf instances.*; run_instances_section;
 			elif [ "$n2" -eq "${#instances[@]}" ]
 		then
-		printf "\e[1m\e[31mSelected: BACK\033[0m"
+		printf "\e[1m\e[31mSelected: BACK\033[0m\n"
 		run_projects_section
 		else
 	        ZONE=$(cat instances.txt | grep  "$INSTANCE " | sed -e 's/  */ /g' | cut -d" " -f2)
@@ -91,7 +91,7 @@ if [ -s instances.lst ]
 		fi
 
 	else
-	printf "\e[1m\e[31mYou selected project with no running instances...\033[0m\n"; run_projects_section;
+	printf "\e[1m\e[31mYou selected project with no running instances...\033[0m\n"; rm -rf instances.*; run_projects_section;
 fi
 }
 run_instances_section
